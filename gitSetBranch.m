@@ -1,8 +1,5 @@
-function [cmds, errs, msgs] = gitSetBranch(repo, branch, preview)
-
+function [cmds, errs, msgs] = gitSetBranch(repo, branch, preview, quiet)
 cmds = {};
-errs = -1;
-msgs = {};
 
 if ~exist('repo','var') || isempty(repo)
     repo = [pwd, '/'];
@@ -13,6 +10,9 @@ end
 if ~exist('preview','var')
     preview = false;
 end
+if ~exist('quiet','var') || isempty(quiet)
+    quiet = 1;
+end
 
 currdir = pwd;
 
@@ -22,7 +22,7 @@ ii = 1;
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('git checkout %s', branch); ii = ii+1;
 
-[errs, msgs] = exeShellCmds(cmds, preview);
+[errs, msgs] = exeShellCmds(cmds, preview, quiet);
 
 cd(currdir);
 
