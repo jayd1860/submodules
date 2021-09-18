@@ -24,5 +24,13 @@ cmds{ii,1} = sprintf('git checkout %s', branch); ii = ii+1;
 
 [errs, msgs] = exeShellCmds(cmds, preview, quiet);
 
+% If requested branch was not checkout it was because it doesn't exist
+% so we create it
+branchnew = gitGetBranch(repo);
+if ~strcmp(branchnew, branch)
+    cmds{ii,1} = sprintf('git checkout -b %s', branch);
+    [errs, msgs] = exeShellCmds(cmds, preview, quiet);
+end
+
 cd(currdir);
 

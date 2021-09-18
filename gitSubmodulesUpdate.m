@@ -21,5 +21,13 @@ cmds{ii,1} = sprintf('git submodule update --init'); ii = ii+1;
 
 [errs, msgs] = exeShellCmds(cmds, preview);
 
+branch = gitGetBranch(repo);
+
+submodules = parseGitSubmodulesFile(repo);
+for ii = 1:size(submodules,1)
+    cd(submodules{ii,3})
+    gitSetBranch(branch);
+end
+
 cd(currdir);
 
