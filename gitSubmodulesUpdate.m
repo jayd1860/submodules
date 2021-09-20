@@ -25,6 +25,7 @@ branch = gitGetBranch(repo);
 
 submodules = parseGitSubmodulesFile(repo);
 for ii = 1:size(submodules,1)
+    cd(repoFull)
     cd(submodules{ii,3})
     gitSetBranch(branch);
 end
