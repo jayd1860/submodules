@@ -1,4 +1,4 @@
-function downloadSubmoduleWithoutGit(submodules, branch)
+function downloadSubmodulesWithoutGit(submodules, branch)
 if isempty(submodules)
     return;
 end
@@ -16,13 +16,16 @@ for ii = 1:size(submodules,1)
     fprintf('Downloading %s/archive/refs/heads/%s.zip  to  %s\n', url, branch, [filenameDownload, '.zip']);    
     urlwrite(sprintf('%s/archive/refs/heads/%s.zip', url, branch), [filenameDownload, '.zip']); %#ok<URLWR>
     
-    fprintf('Unzipping %s\n', [filenameDownload, '.zip']);
-    unzip([filenameDownload, '.zip']);
+    if ispathvalid_startup([filenameDownload, '.zip'])    
+        fprintf('Unzipping %s\n', [filenameDownload, '.zip']);
+        unzip([filenameDownload, '.zip']);
+    end
     
     if ispathvalid_startup(filenameDownload)
         fprintf('Copying %s/*  to  %s\n', filenameDownload, submodulepath);
         copyfile([filenameDownload, '/*'], submodulepath);
     end 
+    
     fprintf('\n');
 end
 
