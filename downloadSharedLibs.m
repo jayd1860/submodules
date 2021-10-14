@@ -28,7 +28,7 @@ if isempty(kk) && (optionExists_startup(options, 'init') || all(errs==0))
 end
 
 % Try to install missing libs without git
-branch = warningGitFailedToInstall(s);
+branch = warningGitFailedToInstall(s(kk,:));
 if ~isempty(branch)
     if optionExists_startup(options, 'init')
         downloadSubmodulesWithoutGit(s(kk,:), branch);
@@ -46,7 +46,7 @@ end
 
 q = warningManualInstallRequired(s(kk,:));
 if q==1
-    errs = -1;
+    errs = -2;
 else
     paths = searchFiles();
     if isempty(paths)
@@ -60,8 +60,11 @@ end
 function kk = checkMissingLibraries(s)
 kk = [];
 for ii = 1:size(s,1)
-    if isemptyFolder(s{ii,3})
+    if isIncompleteSubmodule(s{ii,3})
+        removeFolderContents(s{ii,3});
         kk = [kk, ii]; %#ok<AGROW>
+    else
+        addSearchPaths(s(ii,:));
     end
 end
 
@@ -73,7 +76,7 @@ msg{ii} = sprintf('WARNING: Git failed to install the following libraries requir
 for jj = 1:size(s,1)
     msg{ii} = sprintf('    %s\n', s{jj,1}); ii = ii+1;
 end
-msg{ii} = sprintf('\n'); ii = ii+1;
+msg{ii} = sprintf('\n'); ii = ii+1; %#ok<SPRINTFN>
 msg{ii} = sprintf('Git might not be installed on your computer. '); ii = ii+1;
 msg{ii} = sprintf('These libraries can still be installed without git. Please provide a branch name (default: ''development'') '); ii = ii+1;
 msg{ii} = sprintf('of the submodles branches to download that matches the branch of the parent repo (this application).');
@@ -99,5 +102,35 @@ msg{ii} = sprintf('Select option:');
 msg = [msg{:}];
 
 q = menu(msg, {'Quit setpaths, install git and rerun setpaths','Download submodules manually and provide their locations'});
+
+
+
+
+% ----------------------------------------------------------
+function addSearchPaths(s)
+kk = [];
+exclSearchList  = {'.git'};
+for ii = 1:size(s,1)
+    foo = findDotMFolders(s{ii,3}, exclSearchList);
+    for kk = 1:length(foo)
+        addpath(foo{kk}, '-end');
+        setpermissions(foo{kk});
+    end
+end
+
+
+
+
+% ---------------------------------------------------
+function setpermissions(appPath)
+if isunix() || ismac()
+    if ~isempty(strfind(appPath, '/bin'))
+        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        files = dir([appPath, '/*']);
+        if ~isempty(files)
+            system(sprintf('chmod 755 %s/*', appPath));
+        end
+    end
+end
 
 
